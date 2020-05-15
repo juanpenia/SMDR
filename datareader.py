@@ -1,6 +1,10 @@
 import json
 import PySimpleGUIQt as sg
 
+# TO DO:
+#
+# Adjust table sizes!
+
 sg.theme("DarkAmber") # that's what i like
 
 def const(name):
@@ -10,34 +14,13 @@ def const(name):
 	elif(name == "connection_choices"):
 		return ("", "blocked_users", "close_friends", "follow_requests_sent", "followers", "following", "dismissed_suggested_users")
 
-# if I see this block of functions are all equal i'll merge everything into a function
-# le block..
-def DisplayAccountHistory(d, h):
+def DisplayData(d, h, t):
 	temp_layout = [[sg.Table(d, h, select_mode="browse", size = (854, 480))]]
-	temp_window = sg.Window("Account History", temp_layout,  size=(854, 480), resizable=True, finalize=True)
+	temp_window = sg.Window(t, temp_layout, size=(854, 480), resizable=True, finalize=True)
 	while True:
 		t_event, _t_values = temp_window.read()
 		if t_event is None:
 			break
-
-# ajustar tabla
-def DisplayConnectionsWindow(d, h):
-	temp_layout = [[sg.Table(d, h, select_mode="browse", size = (854, 480))]]
-	temp_window = sg.Window("Connections", temp_layout, size=(854, 480), resizable=True, finalize=True)
-	while True:
-		t_event, _t_values = temp_window.read()
-		if t_event is None:
-			break
-		
-def DisplayCommentsWindow(d, h):
-	temp_layout = [[sg.Table(d, h, select_mode="browse", size = (854, 480))]]
-	temp_window = sg.Window("Comments", temp_layout, size=(854, 480), resizable=True, finalize=True)
-	while True:
-		t_event, _t_values = temp_window.read()
-		if t_event is None:
-			break
-
-# end of le block
 
 
 def ReadjustUI(op, window):
@@ -89,7 +72,7 @@ def MainMenu():
 					log_h.append([*entry.values()])
 
 				# display them
-				DisplayAccountHistory(log_h, headings)
+				DisplayData(log_h, headings, values['options'])
 
 		if values['options'] == "Connections": # Not as though as I thought
 			ReadjustUI(values['options'], window)
@@ -102,7 +85,7 @@ def MainMenu():
 				if(values['con_options'] != ""):
 					for x, y in data[values['con_options']].items():
 						datos.append((x, y))
-					DisplayConnectionsWindow(datos, headings)
+					DisplayData(datos, headings, values['options'])
 
 		if values['options'] == "Comments":
 			ReadjustUI(values['options'], window) # I think at this point that this should be ousside, how bow da?
@@ -111,57 +94,19 @@ def MainMenu():
 				#print(data)
 				headings = ("timestamp", "comment", "post_author")
 				#datos = [x for x in ] # again, var name should be changed
-				DisplayCommentsWindow(data["media_comments"], headings)
+				DisplayData(data["media_comments"], headings, values['options'])
 
 				# a function could be created, 
 				# say SetHeadings(*args)
 				#	return tuple([x for x in args])
 				#   or "a_global_var" = tuple([x for x in args])
 
-
-			
+		
 	# end of While block
 
 	window.close()
 
 # end of MainMenu()
-
-
-
-
-
-
-# NOW A LOT OF SHITY CODE BEGINS
-
-
-
-
-
-# in case it's needed
-
-
-# layout = [[sg.Button("t2")],
-# [sg.Table(t, headings=hs, select_mode="browse", size = (854, 480))]]
-# window2 = sg.Window("Connections", layout,  size=(854, 480), 
-# 	resizable=True, location=(0, 0)).Finalize()
-# window2.maximize()
-
-# while True:
-# 	event2, values2 = window2.read()
-# 	if event2 is None:
-# 		break
-# 	if event2 is "t2":
-# 		layout = [[sg.Button("t2"), sg.Button("t3")],
-# 				[sg.Table(t, headings=hs, select_mode="browse", size = (854, 480))]]
-# 		window3 = sg.Window("Connections", layout,  size=(854, 480), 
-# 	resizable=True, location=(0, 0)).Finalize()
-# 		window2.Close()
-# 		window2 = window3
-# 		print(window2.element_list())
-
-# window2.close()	
-
-
 
 #LET'S REORGANIZE
 
