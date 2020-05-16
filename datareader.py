@@ -9,9 +9,8 @@ import PySimpleGUI as sg # back to regular PySimpleGUI
 #
 # TO DO:
 #
-# Adjust remaining table sizes (connections, likes)!
 # Make it able to unzip a file when folder or zip selection is available
-# Try to find a way to have only one column in the layout
+# Try to find a way to have only one column in the layout (using Update)
 
 sg.theme("DarkAmber") # that's what i like
 
@@ -40,10 +39,16 @@ def Headings(op):
 
 def Column_Widths(op):
 	if(op == "Account History"):
-		return [20, 16, 5, 20, 20, 22]
+		return (20, 16, 5, 20, 20, 22)
 
 	elif(op == "Comments"):
-		return [22, 32, 14]
+		return (22, 32, 14)
+
+	elif(op == "Connections"):
+		return (14, 22)
+	
+	elif(op == "Likes"):
+		return (22, 14)
 
 def DisplayData(d, h, t, cw=None):
 	temp_layout = [[sg.Table(d, h, select_mode="browse", col_widths=cw, num_rows=30, auto_size_columns=False)]]
@@ -94,10 +99,12 @@ def MainMenu():
 
 		if event is None:
 			break
-
-		if values['options'] == "Account History":
+		
+		op = values['options'] # not really needed but makes EVERYTHING SHORTER
+		
+		if op == "Account History":
 			#UpdateMainWindow("acc_history", window, None)
-			ReadjustUI(values['options'], window)
+			ReadjustUI(op, window)
 
 			# this MAYBE could be put into a function
 			with open("account_history.json") as le_file:
@@ -108,10 +115,18 @@ def MainMenu():
 					log_h.append([*entry.values()])
 
 				# display them
-				DisplayData(log_h, Headings(values['options']), values['options'], Column_Widths("Account History"))
+				DisplayData(log_h, Headings(op), op, Column_Widths(op))
 
-		if values['options'] == "Connections": # Not as though as I thought
-			ReadjustUI(values['options'], window)
+		if op == "Comments":
+			ReadjustUI(op, window) # I think at this point that this should be ousside, how bow da?
+			with open("comments.json", encoding="UTF-8") as le_file:
+				data = load(le_file)
+				for x in data["media_comments"]:
+					x[1] = demojize(x[1], use_aliases=True) # because tkinter can't process emojis
+				DisplayData(data["media_comments"], Headings(op), op, Column_Widths(op))
+
+		if op == "Connections": # Not as though as I thought
+			ReadjustUI(op, window)
 
 			with open("connections.json") as le_file:
 				data = load(le_file)
@@ -120,22 +135,14 @@ def MainMenu():
 				if(values['con_options'] != ""):
 					for x, y in data[values['con_options']].items():
 						datos.append((x, y))
-					DisplayData(datos, Headings(values['options']), values['con_options'])
+					DisplayData(datos, Headings(op), values['con_options'], Column_Widths(op))
 
-		if values['options'] == "Comments":
-			ReadjustUI(values['options'], window) # I think at this point that this should be ousside, how bow da?
-			with open("comments.json", encoding="UTF-8") as le_file:
-				data = load(le_file)
-				for x in data["media_comments"]:
-					x[1] = demojize(x[1], use_aliases=True)
-				DisplayData(data["media_comments"], Headings(values['options']), values['options'], Column_Widths("Comments"))
-
-		if values['options'] == "Likes":
-			ReadjustUI(values['options'], window)
+		if op == "Likes":
+			ReadjustUI(op, window)
 			with open("likes.json") as le_file:
 				data = load(le_file)
 				if(values['likes_options'] != ""):
-					DisplayData(data[values['likes_options']], Headings(values['options']), values['likes_options'])
+					DisplayData(data[values['likes_options']], Headings(op), values['likes_options'], Column_Widths(op))
 						
 	# end of While block
 
