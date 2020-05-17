@@ -1,3 +1,4 @@
 *.json
+older_versions/
 datareader_old.py
 json_indenter.py
