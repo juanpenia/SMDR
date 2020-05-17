@@ -9,8 +9,7 @@ import PySimpleGUI as sg # back to regular PySimpleGUI
 #
 # TO DO:
 #
-# Make it able to unzip a file when folder or zip selection is available
-# Try to find a way to have only one column in the layout (using Update)
+# Make it able to unzip a file when folder or zip selection is available (when finished)
 
 sg.theme("DarkAmber") # that's what i like
 
@@ -50,7 +49,7 @@ def Column_Widths(op):
 	elif(op == "Likes"):
 		return (22, 14)
 
-def DisplayData(d, h, t, cw=None):
+def DisplayData(d, h, t, cw=None): # it's None for now until I get every file done
 	temp_layout = [[sg.Table(d, h, select_mode="browse", col_widths=cw, num_rows=30, auto_size_columns=False)]]
 	temp_window = sg.Window(t, temp_layout, resizable=True, finalize=True)
 	while True:
@@ -59,38 +58,24 @@ def DisplayData(d, h, t, cw=None):
 			break
 
 
-def ReadjustUI(op, window):
+def ReadjustUI(op, window, sub_values=None):
 	if(op in ("Account History", "Comments")):
-		#window.Element('con_options').Update(value="")
-		#window.Element('con_options_text').Update(visible=False)
-		window.Element('connections_col').Update(visible=False)
-		window.Element('likes_col').Update(visible=False)
+		window.Element('sub_column').Update(visible=False)
 
-	elif(op == "Connections"):
-		#window.Element('con_options_text').Update(visible=True, value="Select an option:")
-		#window.Element('con_options').Update(visible=True)
-		#window.Element('con_options').Update(value="Select an option")
-		window.Element('likes_col').Update(visible=False)
-		window.Element('con_options').Update(value="")
-		window.Element('connections_col').Update(visible=True)
+	elif(op is "Connections"):
+		window.Element('sub_options').Update(value="", values=sub_values)
+		window.Element('sub_column').Update(visible=True)
 
-	elif(op == "Likes"):
-		#window.Element('likes_options_text').Update(visible=True, value="Select an option:")
-		#window.Element('con_options').Update(visible=True)
-		#window.Element('con_options').Update(value="Select an option")
-		window.Element('connections_col').Update(visible=False)
-		window.Element('likes_options').Update(value="")
-		window.Element('likes_col').Update(visible=True)
+	elif op is "Likes":
+		window.Element('sub_options').Update(value="", values=sub_values)
+		window.Element('sub_column').Update(visible=True)
 
-		
-	
+
 def MainMenu():
-	connection_column = [sg.Text("Select an option:", key="con_options_text"), sg.Combo(const("connection_choices"), default_value="", enable_events=True, key='con_options')]
-	likes_column = [sg.Text("Select an option:", key="likes_options_text"), sg.Combo(const("likes_choices"), default_value="", enable_events=True, key='likes_options')]
+	secondary_column = [sg.Text("Select an option:", key="sub_options_text"), sg.Combo([""], default_value="", size=(20, 1), enable_events=True, key='sub_options')]
 	
 	layout = 	[[sg.Text("Select data to browse:"), sg.Combo(const("valid_options"),  enable_events=True, key='options')],
-						[sg.Column([connection_column], visible=False, key="connections_col")],
-						[sg.Column([likes_column], visible=False, key="likes_col")]]
+						[sg.Column([secondary_column], visible=False, key="sub_column")]]
 
 	window = sg.Window("Data Reader", layout, size=(400, 400), resizable=True, finalize=True)
 
@@ -103,19 +88,18 @@ def MainMenu():
 		op = values['options'] # not really needed but makes EVERYTHING SHORTER
 		
 		if op == "Account History":
-			#UpdateMainWindow("acc_history", window, None)
 			ReadjustUI(op, window)
 
 			# this MAYBE could be put into a function
 			with open("account_history.json") as le_file:
 				data = load(le_file)
-				log_h = []
+				p_data = [] # processed data
 				# getting the actual data
-				for entry in data["login_history"]:
-					log_h.append([*entry.values()])
+				for x in data["login_history"]:
+					p_data.append([*x.values()])
 
 				# display them
-				DisplayData(log_h, Headings(op), op, Column_Widths(op))
+				DisplayData(p_data, Headings(op), op, Column_Widths(op))
 
 		if op == "Comments":
 			ReadjustUI(op, window) # I think at this point that this should be ousside, how bow da?
@@ -126,23 +110,21 @@ def MainMenu():
 				DisplayData(data["media_comments"], Headings(op), op, Column_Widths(op))
 
 		if op == "Connections": # Not as though as I thought
-			ReadjustUI(op, window)
-
+			ReadjustUI(op, window, const("connection_choices"))
 			with open("connections.json") as le_file:
 				data = load(le_file)
-				datos = [] # name should be changed
-				#if(values['con_options'] != "Select an option"):
-				if(values['con_options'] != ""):
-					for x, y in data[values['con_options']].items():
-						datos.append((x, y))
-					DisplayData(datos, Headings(op), values['con_options'], Column_Widths(op))
+				p_data = [] # name should be changed
+				if(values['sub_options'] != ""):
+					for x, y in data[values['sub_options']].items():
+						p_data.append((x, y))
+					DisplayData(p_data, Headings(op), values['sub_options'], Column_Widths(op))
 
 		if op == "Likes":
-			ReadjustUI(op, window)
+			ReadjustUI(op, window, const("likes_choices"))
 			with open("likes.json") as le_file:
 				data = load(le_file)
-				if(values['likes_options'] != ""):
-					DisplayData(data[values['likes_options']], Headings(op), values['likes_options'], Column_Widths(op))
+				if(values['sub_options'] != ""):
+					DisplayData(data[values['sub_options']], Headings(op), values['sub_options'], Column_Widths(op))
 						
 	# end of While block
 
